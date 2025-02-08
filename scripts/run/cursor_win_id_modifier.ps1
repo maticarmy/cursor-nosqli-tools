@@ -1,4 +1,4 @@
-# 设置输出编码为 UTF-8
+﻿# 设置输出编码为 UTF-8
 $OutputEncoding = [System.Text.Encoding]::UTF8
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
@@ -21,9 +21,9 @@ function Test-Administrator {
 }
 
 if (-not (Test-Administrator)) {
-    Write-Host "${RED}[Error]${NC} Please run this script as Administrator"
-    Write-Host "Right-click the script and select 'Run as Administrator'"
-    Read-Host "Press Enter to exit"
+    Write-Host "$RED[错误]$NC 请以管理员身份运行此脚本"
+    Write-Host "请右键点击脚本，选择'以管理员身份运行'"
+    Read-Host "按回车键退出"
     exit 1
 }
 
@@ -39,12 +39,12 @@ Write-Host @"
    ╚═╝  ╚═══╝ ╚═════╝ ╚══════╝ ╚═════╝ ╚══════╝╚═╝
 
 "@
-Write-Host "${BLUE}================================${NC}"
-Write-Host "${GREEN}   Cursor NoSQLi Tools          ${NC}"
-Write-Host "${YELLOW}  Professional Database Security Toolkit ${NC}"
-Write-Host "${YELLOW}  Advanced System Reset & Machine ID Management ${NC}"
-Write-Host "${YELLOW}  [Notice] This tool is for research purposes only ${NC}"
-Write-Host "${BLUE}================================${NC}"
+Write-Host "$BLUE================================$NC"
+Write-Host "$GREEN   Cursor 设备ID 修改工具          $NC"
+Write-Host "$YELLOW  关注闲鱼 NoSQLi 一起交流 $NC"
+Write-Host "$YELLOW  更多Cursor技巧和AI知识(脚本免费、加群有更多技巧和大佬)  $NC"
+Write-Host "$YELLOW  [重要提示] 本工具免费，如果对您有帮助，请关注闲鱼 NoSQLi  $NC"
+Write-Host "$BLUE================================$NC"
 Write-Host ""
 
 # 获取并显示 Cursor 版本
@@ -56,7 +56,7 @@ function Get-CursorVersion {
         if (Test-Path $packagePath) {
             $packageJson = Get-Content $packagePath -Raw | ConvertFrom-Json
             if ($packageJson.version) {
-                Write-Host "${GREEN}[Info]${NC} Current Cursor version: v$($packageJson.version)"
+                Write-Host "$GREEN[信息]$NC 当前安装的 Cursor 版本: v$($packageJson.version)"
                 return $packageJson.version
             }
         }
@@ -66,17 +66,17 @@ function Get-CursorVersion {
         if (Test-Path $altPath) {
             $packageJson = Get-Content $altPath -Raw | ConvertFrom-Json
             if ($packageJson.version) {
-                Write-Host "${GREEN}[Info]${NC} Current Cursor version: v$($packageJson.version)"
+                Write-Host "$GREEN[信息]$NC 当前安装的 Cursor 版本: v$($packageJson.version)"
                 return $packageJson.version
             }
         }
 
-        Write-Host "${YELLOW}[Warning]${NC} Unable to detect Cursor version"
-        Write-Host "${YELLOW}[Tip]${NC} Please ensure Cursor is properly installed"
+        Write-Host "$YELLOW[警告]$NC 无法检测到 Cursor 版本"
+        Write-Host "$YELLOW[提示]$NC 请确保 Cursor 已正确安装"
         return $null
     }
     catch {
-        Write-Host "${RED}[Error]${NC} Failed to get Cursor version: $_"
+        Write-Host "$RED[错误]$NC 获取 Cursor 版本失败: $_"
         return $null
     }
 }
@@ -89,11 +89,11 @@ Write-Host "$YELLOW[重要提示]$NC 最新的 0.45.x (以支持)"
 Write-Host ""
 
 # 检查并关闭 Cursor 进程
-Write-Host "${GREEN}[Info]${NC} Checking Cursor process..."
+Write-Host "$GREEN[信息]$NC 检查 Cursor 进程..."
 
 function Get-ProcessDetails {
     param($processName)
-    Write-Host "${BLUE}[Debug]${NC} Getting process details for ${processName}"
+    Write-Host "$BLUE[调试]$NC 正在获取 $processName 进程详细信息："
     Get-WmiObject Win32_Process -Filter "name='$processName'" | 
         Select-Object ProcessId, ExecutablePath, CommandLine | 
         Format-List
@@ -296,20 +296,19 @@ try {
 
     # 显示公众号信息
     Write-Host ""
-    Write-Host "${GREEN}================================${NC}"
-    Write-Host "${YELLOW}  Follow us on XianYu: NoSQLi  ${NC}"
-    Write-Host "${YELLOW}  Join our community for more tips and tricks  ${NC}"
-    Write-Host "${GREEN}================================${NC}"
+    Write-Host "$GREEN================================$NC"
+    Write-Host "$YELLOW  关注闲鱼 NoSQLi 一起交流更多Cursor技巧和AI知识(脚本免费、加群有更多技巧和大佬)  $NC"
+    Write-Host "$GREEN================================$NC"
     Write-Host ""
-    Write-Host "${GREEN}[Info]${NC} Please restart Cursor to apply new configuration"
+    Write-Host "$GREEN[信息]$NC 请重启 Cursor 以应用新的配置"
     Write-Host ""
 
     # 询问是否要禁用自动更新
     Write-Host ""
-    Write-Host "${YELLOW}[Query]${NC} Do you want to disable Cursor auto-update?"
-    Write-Host "0) No - Keep default settings (Press Enter)"
-    Write-Host "1) Yes - Disable auto-update"
-    $choice = Read-Host "Please select an option (0)"
+    Write-Host "$YELLOW[询问]$NC 是否要禁用 Cursor 自动更新功能？"
+    Write-Host "0) 否 - 保持默认设置 (按回车键)"
+    Write-Host "1) 是 - 禁用自动更新"
+    $choice = Read-Host "请输入选项 (0)"
 
     if ($choice -eq "1") {
         Write-Host ""
@@ -482,24 +481,24 @@ function Compare-Version {
 }
 
 # 在主流程开始时添加版本检查
-Write-Host "${GREEN}[Info]${NC} Checking Cursor version..."
+Write-Host "$GREEN[信息]$NC 正在检查 Cursor 版本..."
 $cursorVersion = Get-CursorVersion
 
 if ($cursorVersion) {
     $compareResult = Compare-Version $cursorVersion "0.45.0"
     if ($compareResult -ge 0) {
-        Write-Host "${RED}[Error]${NC} Current version ($cursorVersion) is not supported"
-        Write-Host "${YELLOW}[Tip]${NC} Please use v0.44.11 or below"
-        Write-Host "${YELLOW}[Tip]${NC} You can download supported versions from:"
+        Write-Host "$RED[错误]$NC 当前版本 ($cursorVersion) 暂不支持"
+        Write-Host "$YELLOW[建议]$NC 请使用 v0.44.11 及以下版本"
+        Write-Host "$YELLOW[建议]$NC 可以从以下地址下载支持的版本:"
         Write-Host "Windows: https://download.todesktop.com/230313mzl4w4u92/Cursor%20Setup%200.44.11%20-%20Build%20250103fqxdt5u9z-x64.exe"
         Write-Host "Mac ARM64: https://dl.todesktop.com/230313mzl4w4u92/versions/0.44.11/mac/zip/arm64"
-        Read-Host "Press Enter to exit"
+        Read-Host "按回车键退出"
         exit 1
     }
     else {
-        Write-Host "${GREEN}[Info]${NC} Current version ($cursorVersion) supports reset function"
+        Write-Host "$GREEN[信息]$NC 当前版本 ($cursorVersion) 支持重置功能"
     }
 }
 else {
-    Write-Host "${YELLOW}[Warning]${NC} Unable to detect version, continuing..."
+    Write-Host "$YELLOW[警告]$NC 无法检测版本，将继续执行..."
 } 
