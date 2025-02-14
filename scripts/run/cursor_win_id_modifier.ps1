@@ -1,4 +1,4 @@
-﻿# 设置输出编码为 UTF-8
+# 设置输出编码为 UTF-8
 $OutputEncoding = [System.Text.Encoding]::UTF8
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
@@ -31,19 +31,18 @@ if (-not (Test-Administrator)) {
 Clear-Host
 Write-Host @"
 
-   ███╗   ██╗ ██████╗ ███████╗ ██████╗ ██╗     ██╗
-   ████╗  ██║██╔═══██╗██╔════╝██╔═══██╗██║     ██║
-   ██╔██╗ ██║██║   ██║███████╗██║   ██║██║     ██║
-   ██║╚██╗██║██║   ██║╚════██║██║   ██║██║     ██║
-   ██║ ╚████║╚██████╔╝███████║╚██████╔╝███████╗██║
-   ╚═╝  ╚═══╝ ╚═════╝ ╚══════╝ ╚═════╝ ╚══════╝╚═╝
+    ██████╗██╗   ██╗██████╗ ███████╗ ██████╗ ██████╗ 
+   ██╔════╝██║   ██║██╔══██╗██╔════╝██╔═══██╗██╔══██╗
+   ██║     ██║   ██║██████╔╝███████╗██║   ██║██████╔╝
+   ██║     ██║   ██║██╔══██╗╚════██║██║   ██║██╔══██╗
+   ╚██████╗╚██████╔╝██║  ██║███████║╚██████╔╝██║  ██║
+    ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚═╝  ╚═╝
 
 "@
 Write-Host "$BLUE================================$NC"
-Write-Host "$GREEN   Cursor 设备ID 修改工具          $NC"
-Write-Host "$YELLOW  关注闲鱼 NoSQLi 一起交流 $NC"
-Write-Host "$YELLOW  更多Cursor技巧和AI知识(脚本免费、加群有更多技巧和大佬)  $NC"
-Write-Host "$YELLOW  [重要提示] 本工具免费，如果对您有帮助，请关注闲鱼 NoSQLi  $NC"
+Write-Host "$GREEN   听泉Cursor助手 - 机器码重置工具   $NC"
+Write-Host "$YELLOW  官方网站: cursor.nosqli.com $NC"
+Write-Host "$YELLOW  微信客服: behikcigar $NC"
 Write-Host "$BLUE================================$NC"
 Write-Host ""
 
@@ -191,26 +190,81 @@ $randomPart = Get-RandomHex -length 32
 $MACHINE_ID = "$prefixHex$randomPart"
 $SQM_ID = "{$([System.Guid]::NewGuid().ToString().ToUpper())}"
 
-# 在生成新ID后直接执行注册表操作，移除询问
+# 在Update-MachineGuid函数前添加权限检查
+if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
+    Write-Host "$RED[错误]$NC 请使用管理员权限运行此脚本"
+    Start-Process powershell "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs
+    exit
+}
+
 function Update-MachineGuid {
     try {
-        $newMachineGuid = [System.Guid]::NewGuid().ToString()
+        # 先检查注册表路径是否存在
         $registryPath = "HKLM:\SOFTWARE\Microsoft\Cryptography"
+        if (-not (Test-Path $registryPath)) {
+            throw "注册表路径不存在: $registryPath"
+        }
+
+        # 获取当前的 MachineGuid
+        $currentGuid = Get-ItemProperty -Path $registryPath -Name MachineGuid -ErrorAction Stop
+        if (-not $currentGuid) {
+            throw "无法获取当前的 MachineGuid"
+        }
+
+        $originalGuid = $currentGuid.MachineGuid
+        Write-Host "$GREEN[信息]$NC 当前注册表值："
+        Write-Host "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Cryptography" 
+        Write-Host "    MachineGuid    REG_SZ    $originalGuid"
+
+        # 创建备份目录（如果不存在）
+        if (-not (Test-Path $BACKUP_DIR)) {
+            New-Item -ItemType Directory -Path $BACKUP_DIR -Force | Out-Null
+        }
+
+        # 创建备份文件
+        $backupFile = "$BACKUP_DIR\MachineGuid_$(Get-Date -Format 'yyyyMMdd_HHmmss').reg"
+        $backupResult = Start-Process "reg.exe" -ArgumentList "export", "`"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Cryptography`"", "`"$backupFile`"" -NoNewWindow -Wait -PassThru
         
-        # 备份原始值
-        $originalGuid = (Get-ItemProperty -Path $registryPath -Name "MachineGuid").MachineGuid
-        $backupFile = "$BACKUP_DIR\MachineGuid.backup_$(Get-Date -Format 'yyyyMMdd_HHmmss')"
-        $originalGuid | Out-File $backupFile -Encoding UTF8
-        
+        if ($backupResult.ExitCode -eq 0) {
+            Write-Host "$GREEN[信息]$NC 注册表项已备份到：$backupFile"
+        } else {
+            Write-Host "$YELLOW[警告]$NC 备份创建失败，继续执行..."
+        }
+
+        # 生成新GUID
+        $newGuid = [System.Guid]::NewGuid().ToString()
+
         # 更新注册表
-        Set-ItemProperty -Path $registryPath -Name "MachineGuid" -Value $newMachineGuid
-        Write-Host "$GREEN[信息]$NC 已更新系统 MachineGuid: $newMachineGuid"
-        Write-Host "$GREEN[信息]$NC 原始值已备份至: $backupFile"
-        Write-Host "$GREEN[信息]$NC 注册表路径: 计算机\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Cryptography"
-        Write-Host "$GREEN[信息]$NC 注册表项名: MachineGuid"
+        Set-ItemProperty -Path $registryPath -Name MachineGuid -Value $newGuid -Force -ErrorAction Stop
+        
+        # 验证更新
+        $verifyGuid = (Get-ItemProperty -Path $registryPath -Name MachineGuid -ErrorAction Stop).MachineGuid
+        if ($verifyGuid -ne $newGuid) {
+            throw "注册表验证失败：更新后的值 ($verifyGuid) 与预期值 ($newGuid) 不匹配"
+        }
+
+        Write-Host "$GREEN[信息]$NC 注册表更新成功："
+        Write-Host "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Cryptography"
+        Write-Host "    MachineGuid    REG_SZ    $newGuid"
+        return $true
     }
     catch {
-        Write-Host "$RED[错误]$NC 更新系统 MachineGuid 失败: $_"
+        Write-Host "$RED[错误]$NC 注册表操作失败：$($_.Exception.Message)"
+        
+        # 尝试恢复备份
+        if ($backupFile -and (Test-Path $backupFile)) {
+            Write-Host "$YELLOW[恢复]$NC 正在从备份恢复..."
+            $restoreResult = Start-Process "reg.exe" -ArgumentList "import", "`"$backupFile`"" -NoNewWindow -Wait -PassThru
+            
+            if ($restoreResult.ExitCode -eq 0) {
+                Write-Host "$GREEN[恢复成功]$NC 已还原原始注册表值"
+            } else {
+                Write-Host "$RED[错误]$NC 恢复失败，请手动导入备份文件：$backupFile"
+            }
+        } else {
+            Write-Host "$YELLOW[警告]$NC 未找到备份文件或备份创建失败，无法自动恢复"
+        }
+        return $false
     }
 }
 
@@ -297,7 +351,7 @@ try {
     # 显示公众号信息
     Write-Host ""
     Write-Host "$GREEN================================$NC"
-    Write-Host "$YELLOW  关注闲鱼 NoSQLi 一起交流更多Cursor技巧和AI知识(脚本免费、加群有更多技巧和大佬)  $NC"
+    Write-Host "$YELLOW  欢迎使用Cursor助手  $NC"
     Write-Host "$GREEN================================$NC"
     Write-Host ""
     Write-Host "$GREEN[信息]$NC 请重启 Cursor 以应用新的配置"
@@ -412,6 +466,9 @@ try {
     else {
         Write-Host "$GREEN[信息]$NC 保持默认设置，不进行更改"
     }
+
+    # 保留有效的注册表更新
+    Update-MachineGuid
 
 } catch {
     Write-Host "$RED[错误]$NC 主要操作失败: $_"
