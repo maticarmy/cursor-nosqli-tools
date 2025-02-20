@@ -40,9 +40,9 @@ Write-Host @"
 
 "@
 Write-Host "$BLUE================================$NC"
-Write-Host "$GREEN   听泉Cursor助手 - 机器码重置工具   $NC"
-Write-Host "$YELLOW  官方网站: cursor.nosqli.com $NC"
-Write-Host "$YELLOW  微信客服: behikcigar $NC"
+Write-Host "$GREEN   Cursor 设备ID 修改工具          $NC"
+Write-Host "$YELLOW  关注公众号【听泉助手】 $NC"
+Write-Host "$YELLOW  [重要提示] 本工具免费，如果对您有帮助，请关注公众号【听泉助手】  $NC"
 Write-Host "$BLUE================================$NC"
 Write-Host ""
 
@@ -351,7 +351,7 @@ try {
     # 显示公众号信息
     Write-Host ""
     Write-Host "$GREEN================================$NC"
-    Write-Host "$YELLOW  欢迎使用Cursor助手  $NC"
+    Write-Host "$YELLOW  【听泉助手】 $NC"
     Write-Host "$GREEN================================$NC"
     Write-Host ""
     Write-Host "$GREEN[信息]$NC 请重启 Cursor 以应用新的配置"
