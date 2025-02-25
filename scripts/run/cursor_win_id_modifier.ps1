@@ -41,8 +41,9 @@ Write-Host @"
 "@
 Write-Host "$BLUE================================$NC"
 Write-Host "$GREEN   Cursor 设备ID 修改工具          $NC"
-Write-Host "$YELLOW  关注公众号【听泉助手】 $NC"
-Write-Host "$YELLOW  [重要提示] 本工具免费，如果对您有帮助，请关注公众号【听泉助手】  $NC"
+Write-Host "$YELLOW  关注公众号【煎饼果子卷AI】 $NC"
+Write-Host "$YELLOW  一起交流更多Cursor技巧和AI知识(脚本免费、关注公众号加群有更多技巧和大佬)  $NC"
+Write-Host "$YELLOW  [重要提示] 本工具免费，如果对您有帮助，请关注公众号【煎饼果子卷AI】  $NC"
 Write-Host "$BLUE================================$NC"
 Write-Host ""
 
@@ -351,7 +352,7 @@ try {
     # 显示公众号信息
     Write-Host ""
     Write-Host "$GREEN================================$NC"
-    Write-Host "$YELLOW  【听泉助手】 $NC"
+    Write-Host "$YELLOW  关注公众号【煎饼果子卷AI】一起交流更多Cursor技巧和AI知识(脚本免费、关注公众号加群有更多技巧和大佬)  $NC"
     Write-Host "$GREEN================================$NC"
     Write-Host ""
     Write-Host "$GREEN[信息]$NC 请重启 Cursor 以应用新的配置"
@@ -398,16 +399,24 @@ try {
         }
 
         try {
-            # 删除现有目录
+            # 检查cursor-updater是否存在
             if (Test-Path $updaterPath) {
-                try {
-                    Remove-Item -Path $updaterPath -Force -Recurse -ErrorAction Stop
-                    Write-Host "$GREEN[信息]$NC 成功删除 cursor-updater 目录"
-                }
-                catch {
-                    Write-Host "$RED[错误]$NC 删除 cursor-updater 目录失败"
-                    Show-ManualGuide
+                # 如果是文件,说明已经创建了阻止更新
+                if ((Get-Item $updaterPath) -is [System.IO.FileInfo]) {
+                    Write-Host "$GREEN[信息]$NC 已创建阻止更新文件,无需再次阻止"
                     return
+                }
+                # 如果是目录,尝试删除
+                else {
+                    try {
+                        Remove-Item -Path $updaterPath -Force -Recurse -ErrorAction Stop
+                        Write-Host "$GREEN[信息]$NC 成功删除 cursor-updater 目录"
+                    }
+                    catch {
+                        Write-Host "$RED[错误]$NC 删除 cursor-updater 目录失败"
+                        Show-ManualGuide
+                        return
+                    }
                 }
             }
 
